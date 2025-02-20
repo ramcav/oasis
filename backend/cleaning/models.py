@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 class Cleaning(models.Model):
     date = models.DateTimeField()
     status = models.CharField(max_length=10)
-    cleaner = models.ForeignKey(User, on_delete=models.CASCADE)
+    cleaner = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     apartment = models.ForeignKey(Apartment, on_delete=models.CASCADE)
     
 review_status = {
