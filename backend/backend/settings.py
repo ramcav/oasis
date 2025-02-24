@@ -171,3 +171,8 @@ SIMPLE_JWT = {
 
 GSPREAD_CREDS_FILE = os.path.join(BASE_DIR, "gspread_creds.json")
 SHEET_ID = os.getenv("SHEET_ID")
+
+### REDIS CONF
+CELERY_BROKER_URL = os.getenv("REDIS_CONNECTION_STRING")
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'

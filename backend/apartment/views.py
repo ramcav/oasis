@@ -13,6 +13,8 @@ from google.oauth2.service_account import Credentials
 
 from django.conf import settings
 
+from .tasks import check_google_sheets_for_apartments
+
 # Create your views here.
 @api_view(['GET'])
 def list_apartments(request):
@@ -38,5 +40,7 @@ def get_apartments_from_api(request):
 
     sheet = client.open_by_key(settings.SHEET_ID).sheet1 
     data = sheet.get_all_records()
+    
+    check_google_sheets_for_apartments.delay()
     
     return Response(data)
