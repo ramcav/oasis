@@ -101,8 +101,6 @@ if os.getenv("ENV") == "prod" or os.getenv("ENV") == "uat":
             "PORT": os.getenv("POSTGRES_PORT"),
         }
     }
-    
-    print(DATABASES)
 else: 
     DATABASES = {
         "default": {
