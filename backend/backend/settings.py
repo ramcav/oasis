@@ -91,6 +91,14 @@ WSGI_APPLICATION = "backend.wsgi.application"
 
 
 if os.getenv("ENV") == "prod" or os.getenv("ENV") == "uat":
+    
+    print("Using Postgres")
+    print(os.getenv("POSTGRES_DATABASE"))
+    print(os.getenv("POSTGRES_USER"))
+    print(os.getenv("POSTGRES_PASSWORD"))
+    print(os.getenv("POSTGRES_HOST"))
+    print(os.getenv("POSTGRES_PORT"))
+    
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",
