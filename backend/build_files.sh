@@ -1,14 +1,23 @@
 #!/bin/bash
 
-export PATH="/vercel/.python/bin:$PATH"  # Ensure Python is accessible
+# Ensure Vercel's Python environment is used
+export PATH="/vercel/.python/bin:$PATH"
 
-# Ensure the correct Python and pip version
+# Check if Python is available
+which python3 || echo "Python3 not found"
+which pip || echo "Pip not found"
+
+# Create and activate virtual environment
 python3 -m venv venv
 source venv/bin/activate
 
-pip install --upgrade pip  # Ensure pip is updated
-pip install --no-cache-dir -r requirements.txt  # Install dependencies without cache
+# Upgrade pip
+pip install --upgrade pip
 
+# Install dependencies
+pip install --no-cache-dir -r requirements.txt
+
+# Run Django commands
 python manage.py makemigrations
 python manage.py migrate
 python manage.py collectstatic --noinput
