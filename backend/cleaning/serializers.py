@@ -17,7 +17,6 @@ class CleaningSerializer(serializers.ModelSerializer):
     class Meta:
         model = Cleaning
         fields = ['id', 'date', 'status', 'cleaner', 'apartment']
-        
         read_only_fields = ['id', 'date']
         
 class ReviewSerializer(serializers.ModelSerializer):
