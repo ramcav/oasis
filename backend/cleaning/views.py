@@ -1,7 +1,7 @@
 from django.shortcuts import render
 
 from rest_framework import viewsets
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.response import Response
 
 from .models import Cleaning, Review
@@ -9,6 +9,8 @@ from .serializers import CleaningSerializer, ReviewSerializer
 
 # Create your views here.
 @api_view(['GET'])
+@permission_classes([])
+@authentication_classes([])
 def list_cleanings(request):
     cleanings = Cleaning.objects.all()
     serializer = CleaningSerializer(cleanings, many=True)
