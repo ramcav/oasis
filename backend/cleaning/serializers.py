@@ -10,20 +10,20 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ['id', 'username', 'email']
 
-class CleaningSerializer(serializers.ModelSerializer):
-    cleaner = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
-    apartment = ApartmentSerializer(read_only=True)
-    
-    class Meta:
-        model = Cleaning
-        fields = ['id', 'date', 'status', 'cleaner', 'apartment']
-        read_only_fields = ['id', 'date']
-        
 class ReviewSerializer(serializers.ModelSerializer):
     handyman = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
-    cleaning = CleaningSerializer(read_only=True)
     
     class Meta:
         model = Review
-        fields = ['id', 'handyman', 'cleaning', 'date', 'status', 'comment']
+        fields = ['id', 'handyman','date', 'status', 'comment']
+        read_only_fields = ['id', 'date']
+
+class CleaningSerializer(serializers.ModelSerializer):
+    cleaner = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    apartment = ApartmentSerializer(read_only=True)
+    review  = ReviewSerializer(read_only=True)
+    
+    class Meta:
+        model = Cleaning
+        fields = ['id', 'date', 'status', 'cleaner', 'apartment', 'review', 'arrival_time', 'departure_time']
         read_only_fields = ['id', 'date']
