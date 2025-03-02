@@ -30,9 +30,9 @@ load_dotenv(os.path.join(BASE_DIR, '.dev.env'))
 SECRET_KEY = "django-insecure-)@&*5)#vu$^8%-^5-4dgyg9nuif8*jjoo&(hq9=27h^!e&ywd!"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv("DEBUG") == "True"
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS").split(",")
 
 
 # Application definition
@@ -89,12 +89,25 @@ WSGI_APPLICATION = "backend.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+
+if os.getenv("ENV") == "prod" or os.getenv("ENV") == "uat":
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.getenv("POSTGRES_DATABASE"),
+            "USER": os.getenv("POSTGRES_USER"),
+            "PASSWORD": os.getenv("POSTGRES_PASSWORD"),
+            "HOST": os.getenv("POSTGRES_HOST"),
+            "PORT": os.getenv("POSTGRES_PORT"),
+        }
     }
-}
+else: 
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
 
 
 # Password validation
@@ -154,7 +167,14 @@ SIMPLE_JWT = {
     'SLIDING_TOKEN_LIFETIME': timedelta(days=30),
     'SLIDING_TOKEN_REFRESH_LIFETIME_LATE_USER': timedelta(days=1),
     'SLIDING_TOKEN_LIFETIME_LATE_USER': timedelta(days=30),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True
 }
 
 GSPREAD_CREDS_FILE = os.path.join(BASE_DIR, "gspread_creds.json")
 SHEET_ID = os.getenv("SHEET_ID")
+
+### REDIS CONF
+CELERY_BROKER_URL = os.getenv("REDIS_CONNECTION_STRING")
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
