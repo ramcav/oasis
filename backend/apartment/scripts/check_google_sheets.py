@@ -1,15 +1,16 @@
-import gspread
-from google.oauth2.service_account import Credentials
-from celery import shared_task
-from django.conf import settings
-from cleaning.models import Cleaning, Review
-from apartment.models import Apartment
-from django.contrib.auth.models import User
+import os
+import django
 from datetime import datetime
 from django.utils import timezone
+import gspread
+from google.oauth2.service_account import Credentials
+from cleaning.models import Cleaning, Review
+from apartment.models import Apartment
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.settings")
+django.setup()
 
 def parse_time(time_str):
-    """Helper function to parse time in HH:MM format, return None if empty."""
     if time_str:
         try:
             return datetime.strptime(time_str, "%H:%M").time()
@@ -17,9 +18,9 @@ def parse_time(time_str):
             print(f"⚠ Invalid time format: {time_str}")
     return None
 
-@shared_task
-def check_google_sheets_for_apartments():
-    """Checks the Google Sheet, creates new apartments, schedules cleanings, and assigns reviews."""
+def check_google_sheets():
+    """Checks Google Sheets, creates new apartments, schedules cleanings, and assigns reviews."""
+    from django.conf import settings
     
     scopes = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
     creds = Credentials.from_service_account_file(settings.GSPREAD_CREDS_FILE, scopes=scopes)
@@ -59,14 +60,19 @@ def check_google_sheets_for_apartments():
                 departure_time=departure_time
             )
             print(f"🧹 Cleaning scheduled for {apartment.name} on {exit_date}")
-            
-            # Automatically create a review for this cleaning
-            Review.objects.create(
-                cleaning=cleaning,
-                date=timezone.now(),
-                status='N',
-                comment=''
-            )
-            print(f"🔍 Review created for cleaning on {exit_date}")
 
-    return "✔ Google Sheets successfully checked and updated."
+            # ✅ Check if a review already exists before creating one
+            if not Review.objects.filter(cleaning=cleaning).exists():
+                Review.objects.create(
+                    cleaning=cleaning,
+                    date=timezone.now(),
+                    status='N',
+                    comment=''
+                )
+                print(f"🔍 Review created for cleaning on {exit_date}")
+
+
+    print("✔ Google Sheets successfully checked and updated.")
+
+if __name__ == "__main__":
+    check_google_sheets()
