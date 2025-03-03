@@ -27,7 +27,9 @@ def check_google_sheets(special_code):
         return
     
     scopes = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
-    creds = Credentials.from_service_account_file(settings.GSPREAD_CREDS_FILE, scopes=scopes)
+
+    creds = Credentials.from_service_account_info(settings.GSPREAD_CREDS, scopes=scopes)
+
     client = gspread.authorize(creds)
 
     sheet = client.open_by_key(settings.SHEET_ID).sheet1  
@@ -75,8 +77,12 @@ def check_google_sheets(special_code):
                 )
                 print(f"🔍 Review created for cleaning on {exit_date}")
 
-
+    data = {"apartments": Apartment.objects.count(), "cleanings": Cleaning.objects.count(), "reviews": Review.objects.count()}
+    
+    
     print("✔ Google Sheets successfully checked and updated.")
+    
+    return data
 
 if __name__ == "__main__":
     check_google_sheets()

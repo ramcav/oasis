@@ -39,7 +39,6 @@ def list_cleanings(request):
 @authentication_classes([])
 def get_cleaning(request, pk):
     cleaning = Cleaning.objects.get(id=pk)
-    print(cleaning.review)
     serializer = CleaningSerializer(cleaning)
     return Response(serializer.data)
 
@@ -75,7 +74,6 @@ def update_cleaning(request, pk):
     if 'cleaner' in request.data:
         request.data['cleaner'] = int(request.data['cleaner'])
     serializer = CleaningSerializer(instance=cleaning, data=request.data)
-    print(serializer)
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data)

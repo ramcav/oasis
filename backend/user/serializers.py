@@ -62,7 +62,6 @@ class CustomTokenRefreshSerializer(TokenRefreshSerializer):
             access_token = AccessToken(data["access"])  
             exp_timestamp = access_token.payload["exp"]
             data["access_expires_at"] = datetime.utcfromtimestamp(exp_timestamp).isoformat()
-            print("Access Token Expires At:", data["access_expires_at"])  # Debugging expiration time
         except Exception as e:
             return Response({"error": "Invalid token"}, status=status.HTTP_400_BAD_REQUEST)
 

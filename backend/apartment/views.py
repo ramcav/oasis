@@ -41,22 +41,7 @@ def get_apartments_from_api(request):
     if special_code != settings.SPECIAL_CODE:
         return Response({"error": "Unauthorized"}, status=403)
 
-    # ✅ Authenticate with Google Sheets
-    scopes = [
-        'https://www.googleapis.com/auth/spreadsheets.readonly',
-        'https://www.googleapis.com/auth/drive.readonly'
-    ]
-    creds = Credentials.from_service_account_file(settings.GSPREAD_CREDS_FILE, scopes=scopes)
-    client = gspread.authorize(creds)
-
-    # ✅ Fetch Google Sheets Data
-    try:
-        sheet = client.open_by_key(settings.SHEET_ID).sheet1 
-        data = sheet.get_all_records()
-    except Exception as e:
-        return Response({"error": f"Failed to fetch data: {str(e)}"}, status=500)
-
     # ✅ Run Google Sheets processing function with special_code
-    check_google_sheets.check_google_sheets(special_code)
+    data = check_google_sheets.check_google_sheets(special_code)
 
     return Response({"status": "Task executed successfully!", "data": data})

@@ -15,6 +15,7 @@ from datetime import timedelta
 
 from dotenv import load_dotenv
 import os
+import json
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -171,7 +172,7 @@ SIMPLE_JWT = {
     "BLACKLIST_AFTER_ROTATION": True
 }
 
-GSPREAD_CREDS_FILE = os.path.join(BASE_DIR, "gspread_creds.json")
+GSPREAD_CREDS= json.loads(os.getenv("GSPREAD_CREDS", "{}"))
 SHEET_ID = os.getenv("SHEET_ID")
 
 SPECIAL_CODE = os.getenv("SPECIAL_CODE")
