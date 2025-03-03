@@ -18,9 +18,13 @@ def parse_time(time_str):
             print(f"⚠ Invalid time format: {time_str}")
     return None
 
-def check_google_sheets():
+def check_google_sheets(special_code):
     """Checks Google Sheets, creates new apartments, schedules cleanings, and assigns reviews."""
     from django.conf import settings
+    
+    if special_code != settings.SPECIAL_CODE:
+        print("❌ Invalid special code.")
+        return
     
     scopes = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
     creds = Credentials.from_service_account_file(settings.GSPREAD_CREDS_FILE, scopes=scopes)

@@ -1,0 +1,13 @@
+name: Trigger DigitalOcean Function Weekly
+
+on:
+  schedule:
+    - cron: '0 0 * * 0'  # Runs every Sunday at midnight UTC
+
+jobs:
+  run-task:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call DigitalOcean Function with Secret Code
+        run: |
+          curl -X POST "${{ secrets.FUNCTION_URL }}" -H "Content-Type: application/json" -d '{"special_code": "${{ secrets.SPECIAL_CODE }}"}'

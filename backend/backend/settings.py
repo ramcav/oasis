@@ -173,3 +173,5 @@ SIMPLE_JWT = {
 
 GSPREAD_CREDS_FILE = os.path.join(BASE_DIR, "gspread_creds.json")
 SHEET_ID = os.getenv("SHEET_ID")
+
+SPECIAL_CODE = os.getenv("SPECIAL_CODE")

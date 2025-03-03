@@ -8,12 +8,13 @@ from .models import Apartment
 from .serializers import ApartmentSerializer
 
 import gspread
-import pandas as pd
 from google.oauth2.service_account import Credentials
 
 from django.conf import settings
 
 from .scripts import check_google_sheets
+
+import json
 
 # Create your views here.
 @api_view(['GET'])
@@ -22,23 +23,40 @@ def list_apartments(request):
     serializer = ApartmentSerializer(apartments, many=True)
     return Response(serializer.data)
 
-@api_view(['GET'])
-@permission_classes([])
-@authentication_classes([])
+@api_view(['POST'])
+@permission_classes([])  # No permissions required
+@authentication_classes([])  # No authentication required
 def get_apartments_from_api(request):
-    
+    """
+    Securely fetches Google Sheets data and triggers check_google_sheets with special_code.
+    """
+    # ✅ Extract special_code from request body (more secure than query params)
+    try:
+        body = json.loads(request.body)
+        special_code = body.get('special_code')
+    except json.JSONDecodeError:
+        return Response({"error": "Invalid JSON"}, status=400)
+
+    # ✅ Validate special_code (Use an environment variable or settings for security)
+    if special_code != settings.SPECIAL_CODE:
+        return Response({"error": "Unauthorized"}, status=403)
+
+    # ✅ Authenticate with Google Sheets
     scopes = [
-        'https://www.googleapis.com/auth/spreadsheets',
-        'https://www.googleapis.com/auth/drive'
+        'https://www.googleapis.com/auth/spreadsheets.readonly',
+        'https://www.googleapis.com/auth/drive.readonly'
     ]
-    
     creds = Credentials.from_service_account_file(settings.GSPREAD_CREDS_FILE, scopes=scopes)
-    
     client = gspread.authorize(creds)
 
-    sheet = client.open_by_key(settings.SHEET_ID).sheet1 
-    data = sheet.get_all_records()
-    
-    check_google_sheets.check_google_sheets()
-    
-    return Response(data)
+    # ✅ Fetch Google Sheets Data
+    try:
+        sheet = client.open_by_key(settings.SHEET_ID).sheet1 
+        data = sheet.get_all_records()
+    except Exception as e:
+        return Response({"error": f"Failed to fetch data: {str(e)}"}, status=500)
+
+    # ✅ Run Google Sheets processing function with special_code
+    check_google_sheets.check_google_sheets(special_code)
+
+    return Response({"status": "Task executed successfully!", "data": data})
