@@ -15,7 +15,7 @@ RUN pip install -r requirements.txt
 EXPOSE 8000
 
 # Copy and configure entrypoint
-COPY ./entrypoint.sh entrypoint.sh
+COPY entrypoint.sh entrypoint.sh
 RUN sed -i 's/\r$//g' entrypoint.sh
 RUN chmod +x entrypoint.sh
 
