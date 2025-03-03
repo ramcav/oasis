@@ -19,5 +19,5 @@ COPY entrypoint.sh entrypoint.sh
 RUN sed -i 's/\r$//g' entrypoint.sh
 RUN chmod +x entrypoint.sh
 
-ENTRYPOINT [ "entrypoint.sh" ]
+ENTRYPOINT [ "/entrypoint.sh" ]
 CMD gunicorn --bind 0.0.0.0:${PORT:-8000} backend.wsgi:application
