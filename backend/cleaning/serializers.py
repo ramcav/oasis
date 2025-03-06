@@ -11,15 +11,14 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['id', 'username', 'email']
 
 class ReviewSerializer(serializers.ModelSerializer):
-    handyman = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
-    
+    handyman = UserSerializer(read_only=True)
     class Meta:
         model = Review
         fields = ['id', 'handyman','date', 'status', 'comment']
         read_only_fields = ['id', 'date']
 
 class CleaningSerializer(serializers.ModelSerializer):
-    cleaner = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    cleaner = UserSerializer(read_only=True)
     apartment = ApartmentSerializer(read_only=True)
     review  = ReviewSerializer(read_only=True)
     
