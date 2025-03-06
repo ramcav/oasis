@@ -5,8 +5,10 @@ from rest_framework.decorators import api_view, permission_classes, authenticati
 from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework import generics
 
 from .serializers import UserSerializer, CustomTokenObtainPairSerializer, CustomTokenRefreshSerializer
+from .models import User  # Make sure to import your User model
 
 from datetime import datetime
 
@@ -46,3 +48,8 @@ class CustomTokenObtainPairView(TokenObtainPairView):
     
 class CustomTokenRefreshView(TokenRefreshView):
     serializer_class = CustomTokenRefreshSerializer
+
+# Add a new view to list all users
+class UserListView(generics.ListAPIView):
+    queryset = User.objects.all()  # Query to get all users
+    serializer_class = UserSerializer  # Use the existing UserSerializer
