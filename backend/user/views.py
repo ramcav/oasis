@@ -2,7 +2,7 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import generics
@@ -53,3 +53,14 @@ class CustomTokenRefreshView(TokenRefreshView):
 class UserListView(generics.ListAPIView):
     queryset = User.objects.all()  # Query to get all users
     serializer_class = UserSerializer  # Use the existing UserSerializer
+
+# Add a new view to delete a user
+class UserDeleteView(generics.DestroyAPIView):
+    queryset = User.objects.all()  # Query to get all users
+    serializer_class = UserSerializer  # Use the existing UserSerializer
+    permission_classes = [IsAuthenticated]  # Ensure only admin users can delete
+
+    def delete(self, request, *args, **kwargs):
+        user = self.get_object()
+        user.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT) 
