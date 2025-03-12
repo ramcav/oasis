@@ -21,8 +21,12 @@ class CleaningSerializer(serializers.ModelSerializer):
     cleaner = UserSerializer(read_only=True)
     apartment = ApartmentSerializer(read_only=True)
     review  = ReviewSerializer(read_only=True)
+    date = serializers.SerializerMethodField()
     
     class Meta:
         model = Cleaning
         fields = ['id', 'date', 'status', 'cleaner', 'apartment', 'review', 'arrival_time', 'departure_time']
         read_only_fields = ['id', 'date']
+        
+    def get_date(self, obj):
+        return obj.arrival.departure_date if obj.arrival else None

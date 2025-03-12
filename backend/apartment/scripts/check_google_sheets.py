@@ -5,7 +5,7 @@ from django.utils import timezone
 import gspread
 from google.oauth2.service_account import Credentials
 from cleaning.models import Cleaning, Review
-from apartment.models import Apartment
+from apartment.models import Apartment, Arrival
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.settings")
 django.setup()
@@ -39,13 +39,15 @@ def check_google_sheets(special_code):
         name = row.get("APARTAMENTO")
         address = row.get("DIRECCIÓN")
         exit_date = row.get("SALIDA")
+        arrival_date = row.get("ENTRADA")
         arrival_time = parse_time(row.get("HORA_LLEGADA"))
         departure_time = parse_time(row.get("HORA_SALIDA"))
 
-        if not name or not address or not exit_date:
+        if not name or not address or not exit_date or not arrival_date:
             continue
 
         exit_date = datetime.strptime(exit_date, "%d/%m/%Y").date()
+        arrival_date = datetime.strptime(arrival_date, "%d/%m/%Y").date()
 
         apartment, created = Apartment.objects.get_or_create(
             name=name,
@@ -53,14 +55,24 @@ def check_google_sheets(special_code):
             defaults={"description": "Generated from Google Sheets", "rooms": 1, "bathrooms": 1, "extra_info": ""}
         )
 
+        
+
         if created:
             print(f"🏠 New apartment created: {apartment.name}")
 
+
+        if not Arrival.objects.filter(apartment=apartment, arrival_date=arrival_date, departure_date=exit_date).exists():
+            arrival = Arrival.objects.create(
+                apartment=apartment,
+                arrival_date=arrival_date,
+                departure_date=exit_date
+            )
+
         # Schedule a cleaning if one does not already exist for this apartment on the exit date
-        if not Cleaning.objects.filter(apartment=apartment, date=exit_date).exists():
+        if not Cleaning.objects.filter(apartment=apartment, arrival__departure_date=exit_date).exists():
             cleaning = Cleaning.objects.create(
                 apartment=apartment, 
-                date=exit_date, 
+                arrival=arrival, 
                 status='P', 
                 arrival_time=arrival_time, 
                 departure_time=departure_time
@@ -71,13 +83,12 @@ def check_google_sheets(special_code):
             if not Review.objects.filter(cleaning=cleaning).exists():
                 Review.objects.create(
                     cleaning=cleaning,
-                    date=timezone.now(),
                     status='N',
                     comment=''
                 )
                 print(f"🔍 Review created for cleaning on {exit_date}")
 
-    data = {"apartments": Apartment.objects.count(), "cleanings": Cleaning.objects.count(), "reviews": Review.objects.count()}
+    data = {"apartments": Apartment.objects.count(), "cleanings": Cleaning.objects.count(), "reviews": Review.objects.count(), "arrivals": Arrival.objects.count()}
     
     
     print("✔ Google Sheets successfully checked and updated.")

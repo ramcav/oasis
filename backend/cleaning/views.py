@@ -27,9 +27,9 @@ def list_cleanings(request):
     if start_date:
         if start_date == 'null':
             start_date = datetime.now().strftime('%Y-%m-%d')
-        cleanings = cleanings.filter(date__gte=start_date)
+        cleanings = cleanings.filter(arrival__departure_date__gte=start_date)
     
-    cleanings = cleanings.order_by('date')
+    cleanings = cleanings.order_by('arrival__departure_date')
     
     serializer = CleaningSerializer(cleanings, many=True)
     return Response(serializer.data)
@@ -49,7 +49,7 @@ def list_cleanings_grouped_by_date(request):
     cleanings = Cleaning.objects.all()
     grouped_cleanings = {}
     for cleaning in cleanings:
-        date = cleaning.date.strftime('%Y-%m-%d')
+        date = cleaning.arrival.departure_date.strftime('%Y-%m-%d')
         if date not in grouped_cleanings:
             grouped_cleanings[date] = []
         grouped_cleanings[date].append(CleaningSerializer(cleaning).data)

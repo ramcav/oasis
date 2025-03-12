@@ -2,6 +2,7 @@ from django.db import models
 from apartment.models import Apartment
 from django.contrib.auth.models import User
 from django.utils import timezone
+from apartment.models import Arrival
 
 cleaning_status = {
     ('A', 'assigned'),
@@ -11,7 +12,7 @@ cleaning_status = {
 
 # Create your models here.
 class Cleaning(models.Model):
-    date = models.DateField()
+    arrival = models.ForeignKey(Arrival, null=True, blank=True, on_delete=models.CASCADE) 
     status = models.CharField(max_length=10, choices=cleaning_status, default='P')
     cleaner = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     apartment = models.ForeignKey(Apartment, on_delete=models.CASCADE)

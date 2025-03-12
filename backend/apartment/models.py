@@ -12,3 +12,9 @@ class Apartment(models.Model):
     
     def __str__(self):
         return self.name
+    
+class Arrival(models.Model):
+    apartment = models.ForeignKey(Apartment, null=True, blank=True, on_delete=models.CASCADE)
+    arrival_date = models.DateField()
+    departure_date = models.DateField()
+

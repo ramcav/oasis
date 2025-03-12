@@ -4,8 +4,8 @@ from rest_framework import viewsets
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.response import Response
 
-from .models import Apartment
-from .serializers import ApartmentSerializer
+from .models import Apartment, Arrival
+from .serializers import ApartmentSerializer, ArrivalSerializer
 
 import gspread
 from google.oauth2.service_account import Credentials
@@ -23,6 +23,20 @@ def list_apartments(request):
     serializer = ApartmentSerializer(apartments, many=True)
     return Response(serializer.data)
 
+@api_view(['GET'])
+def list_arrivals(request):
+
+    # Filter by apartment name
+    apartment_id = request.query_params.get('apartment_id')
+
+    if apartment_id:
+        arrivals = Arrival.objects.filter(apartment=apartment_id)
+    else:
+        arrivals = Arrival.objects.all()
+
+    serializer = ArrivalSerializer(arrivals, many=True)
+    return Response(serializer.data)
+
 @api_view(['POST'])
 @permission_classes([])  # No permissions required
 @authentication_classes([])  # No authentication required
@@ -35,6 +49,7 @@ def get_apartments_from_api(request):
         body = json.loads(request.body)
         special_code = body.get('special_code')
     except json.JSONDecodeError:
+        print(request.body)
         return Response({"error": "Invalid JSON"}, status=400)
 
     # ✅ Validate special_code (Use an environment variable or settings for security)
