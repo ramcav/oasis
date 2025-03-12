@@ -89,6 +89,6 @@ def check_google_sheets(special_code):
             )
             print(f"🔍 Review created for cleaning on {exit_date_parsed}")
         
-        data = {"apartments": Apartment.objects.count(), "cleanings": Cleaning.objects.count(), "reviews": Review.objects.count()}
+    data = {"apartments": Apartment.objects.count(), "cleanings": Cleaning.objects.count(), "reviews": Review.objects.count()}
         
-        return data
+    return data
