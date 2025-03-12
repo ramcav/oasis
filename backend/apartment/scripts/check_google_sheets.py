@@ -67,18 +67,22 @@ def check_google_sheets(special_code):
 
         if arrival_created:
             print(f"📅 New arrival created for {apartment.name} from {arrival_date} to {exit_date}")
-            
-            # Schedule a cleaning if one does not already exist for this arrival
-            cleaning = Cleaning.objects.create(
-                apartment=apartment, 
-                arrival=arrival, 
-                status='P', 
-                arrival_time=arrival_time, 
-                departure_time=departure_time
-            )
+
+        # Get or create cleaning for this arrival
+        cleaning, cleaning_created = Cleaning.objects.get_or_create(
+            arrival=arrival,
+            apartment=apartment,
+            defaults={
+                'status': 'P',
+                'arrival_time': arrival_time,
+                'departure_time': departure_time
+            }
+        )
+
+        if cleaning_created:
             print(f"🧹 Cleaning scheduled for {apartment.name} on {exit_date}")
 
-            # Create a review for the new cleaning
+            # Create a review only for new cleanings
             Review.objects.create(
                 cleaning=cleaning,
                 date=timezone.now(),
