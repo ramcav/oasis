@@ -73,6 +73,7 @@ def update_cleaning(request, pk):
     
     if 'cleaner' in request.data:
         request.data['cleaner'] = int(request.data['cleaner'])
+        print(request.data['cleaner'])
     serializer = CleaningSerializer(instance=cleaning, data=request.data)
     if serializer.is_valid():
         serializer.save()

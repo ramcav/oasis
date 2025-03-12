@@ -19,14 +19,20 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 class CleaningSerializer(serializers.ModelSerializer):
     cleaner = UserSerializer(read_only=True)
+    cleaner_id = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.all(), write_only=True, source='cleaner', allow_null=True
+    )
     apartment = ApartmentSerializer(read_only=True)
     review  = ReviewSerializer(read_only=True)
     date = serializers.SerializerMethodField()
     
     class Meta:
         model = Cleaning
-        fields = ['id', 'date', 'status', 'cleaner', 'apartment', 'review', 'arrival_time', 'departure_time']
+        fields = [
+            'id', 'date', 'status', 'cleaner', 'cleaner_id', 
+            'apartment', 'review', 'arrival_time', 'departure_time'
+        ]
         read_only_fields = ['id', 'date']
-        
+
     def get_date(self, obj):
         return obj.arrival.departure_date if obj.arrival else None
