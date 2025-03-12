@@ -46,29 +46,27 @@ def check_google_sheets(special_code):
         if not name or not address or not exit_date or not arrival_date:
             continue
 
-        exit_date = datetime.strptime(exit_date, "%d/%m/%Y").date()
-        arrival_date = datetime.strptime(arrival_date, "%d/%m/%Y").date()
+        exit_date_parsed = datetime.strptime(exit_date, "%d/%m/%Y").date()
+        arrival_date_parsed = datetime.strptime(arrival_date, "%d/%m/%Y").date()
 
-        apartment, created = Apartment.objects.get_or_create(
+        apartment, apartment_created = Apartment.objects.get_or_create(
             name=name,
             address=address,
             defaults={"description": "Generated from Google Sheets", "rooms": 1, "bathrooms": 1, "extra_info": ""}
         )
 
-        if created:
+        if apartment_created:
             print(f"🏠 New apartment created: {apartment.name}")
 
-        # Get or create the arrival
         arrival, arrival_created = Arrival.objects.get_or_create(
             apartment=apartment,
-            arrival_date=arrival_date,
-            departure_date=exit_date
+            arrival_date=arrival_date_parsed,
+            departure_date=exit_date_parsed
         )
 
         if arrival_created:
-            print(f"📅 New arrival created for {apartment.name} from {arrival_date} to {exit_date}")
+            print(f"📅 New arrival created for {apartment.name} from {arrival_date_parsed} to {exit_date_parsed}")
 
-        # Get or create cleaning for this arrival
         cleaning, cleaning_created = Cleaning.objects.get_or_create(
             arrival=arrival,
             apartment=apartment,
@@ -80,23 +78,17 @@ def check_google_sheets(special_code):
         )
 
         if cleaning_created:
-            print(f"🧹 Cleaning scheduled for {apartment.name} on {exit_date}")
+            print(f"🧹 Cleaning scheduled for {apartment.name} on {exit_date_parsed}")
 
-            # Create a review only for new cleanings
+        if not Review.objects.filter(cleaning=cleaning).exists():
             Review.objects.create(
                 cleaning=cleaning,
                 date=timezone.now(),
                 status='N',
                 comment=''
             )
-            print(f"🔍 Review created for cleaning on {exit_date}")
-
-    data = {"apartments": Apartment.objects.count(), "cleanings": Cleaning.objects.count(), "reviews": Review.objects.count(), "arrivals": Arrival.objects.count()}
-    
-    
-    print("✔ Google Sheets successfully checked and updated.")
-    
-    return data
-
-if __name__ == "__main__":
-    check_google_sheets()
+            print(f"🔍 Review created for cleaning on {exit_date_parsed}")
+        
+        data = {"apartments": Apartment.objects.count(), "cleanings": Cleaning.objects.count(), "reviews": Review.objects.count()}
+        
+        return data
