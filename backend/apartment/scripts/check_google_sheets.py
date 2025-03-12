@@ -55,21 +55,20 @@ def check_google_sheets(special_code):
             defaults={"description": "Generated from Google Sheets", "rooms": 1, "bathrooms": 1, "extra_info": ""}
         )
 
-        
-
         if created:
             print(f"🏠 New apartment created: {apartment.name}")
 
+        # Get or create the arrival
+        arrival, arrival_created = Arrival.objects.get_or_create(
+            apartment=apartment,
+            arrival_date=arrival_date,
+            departure_date=exit_date
+        )
 
-        if not Arrival.objects.filter(apartment=apartment, arrival_date=arrival_date, departure_date=exit_date).exists():
-            arrival = Arrival.objects.create(
-                apartment=apartment,
-                arrival_date=arrival_date,
-                departure_date=exit_date
-            )
-
-        # Schedule a cleaning if one does not already exist for this apartment on the exit date
-        if not Cleaning.objects.filter(apartment=apartment, arrival__departure_date=exit_date).exists():
+        if arrival_created:
+            print(f"📅 New arrival created for {apartment.name} from {arrival_date} to {exit_date}")
+            
+            # Schedule a cleaning if one does not already exist for this arrival
             cleaning = Cleaning.objects.create(
                 apartment=apartment, 
                 arrival=arrival, 
@@ -79,14 +78,14 @@ def check_google_sheets(special_code):
             )
             print(f"🧹 Cleaning scheduled for {apartment.name} on {exit_date}")
 
-            # ✅ Check if a review already exists before creating one
-            if not Review.objects.filter(cleaning=cleaning).exists():
-                Review.objects.create(
-                    cleaning=cleaning,
-                    status='N',
-                    comment=''
-                )
-                print(f"🔍 Review created for cleaning on {exit_date}")
+            # Create a review for the new cleaning
+            Review.objects.create(
+                cleaning=cleaning,
+                date=timezone.now(),
+                status='N',
+                comment=''
+            )
+            print(f"🔍 Review created for cleaning on {exit_date}")
 
     data = {"apartments": Apartment.objects.count(), "cleanings": Cleaning.objects.count(), "reviews": Review.objects.count(), "arrivals": Arrival.objects.count()}
     
