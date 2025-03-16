@@ -17,6 +17,10 @@ from dotenv import load_dotenv
 import os
 import json
 
+import base64
+import firebase_admin
+from firebase_admin import credentials, firestore
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -53,6 +57,7 @@ INSTALLED_APPS = [
     'user',
     'apartment',
     'cleaning',
+    'notifications'
 ]
 
 MIDDLEWARE = [
@@ -176,3 +181,15 @@ GSPREAD_CREDS= json.loads(os.getenv("GSPREAD_CREDS", "{}"))
 SHEET_ID = os.getenv("SHEET_ID")
 
 SPECIAL_CODE = os.getenv("SPECIAL_CODE")
+
+# Firebase
+
+firebase_base64 = os.getenv("FIREBASE_CREDS")
+firebase_creds = base64.b64decode(firebase_base64).decode("utf-8")
+FIREBASE_CREDS = json.loads(firebase_creds)
+
+cred = credentials.Certificate(FIREBASE_CREDS)
+
+if not firebase_admin._apps:
+    firebase_admin.initialize_app(cred)
+

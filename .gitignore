@@ -174,4 +174,7 @@ cython_debug/
 
 gspread_creds.json
 
+# Firebase saved credentials
+firebase_creds.json
+
 *.env
