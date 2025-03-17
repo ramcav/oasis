@@ -3,6 +3,9 @@ from apartment.models import Apartment
 from django.contrib.auth.models import User
 from django.utils import timezone
 from apartment.models import Arrival
+from datetime import datetime
+from notifications.utils import send_notification
+
 
 cleaning_status = {
     ('A', 'assigned'),
@@ -22,6 +25,30 @@ class Cleaning(models.Model):
     def save(self, *args, **kwargs):
         if self.cleaner is not None and self.status == 'P':
             self.status = 'A'
+
+            admins = User.objects.filter(profile__role='admin')
+
+            send_notification(
+                title=f"Cleaning assigned to {self.cleaner.username}",
+                message=f"Cleaning assigned to {self.cleaner.username} for {self.apartment.name} ({self.arrival.departure_date})",
+                django_user_ids=[admin.id for admin in admins]
+            )
+
+            send_notification(
+                title="Limpieza pendiente para mañana",
+                message=f"Preparate para limpiar el apartamento {self.apartment.name} ({self.arrival.departure_date}) mañana.",
+                django_user_ids=[self.cleaner.id],
+                scheduled_time=datetime.combine(self.arrival.departure_date, datetime.min.time().replace(hour=10))
+            )
+
+        admins = User.objects.filter(profile__role='admin')
+
+        if self.status == 'C':
+            send_notification(
+                title=f"Cleaning completed",
+                message=f"Cleaning completed for {self.apartment.name} ({self.arrival.departure_date})",
+                django_user_ids=[admin.id for admin in admins]
+            )
         
         super(Cleaning, self).save(*args, **kwargs)
         

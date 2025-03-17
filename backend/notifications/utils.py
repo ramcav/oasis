@@ -3,7 +3,7 @@ from firebase_admin import firestore
 
 db = firestore.client()
 
-def send_notification(title, message, django_user_ids=None, initial_page_name="calendar"):
+def send_notification(title, message, django_user_ids=None,scheduled_time=None,initial_page_name="calendar"):
     users_ref = db.collection("users")
 
     user_refs_str = ""
@@ -25,6 +25,9 @@ def send_notification(title, message, django_user_ids=None, initial_page_name="c
         "timestamp": firestore.SERVER_TIMESTAMP,
     }
 
+    if scheduled_time:
+        notification_payload["scheduled_time"] = scheduled_time
+        
     try:
         db.collection("ff_push_notifications").add(notification_payload)
         print(f"Notification created in ff_push_notifications for users: {django_user_ids}")
