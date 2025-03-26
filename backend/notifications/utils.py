@@ -8,6 +8,8 @@ def send_notification(title, message, django_user_ids=None,scheduled_time=None,i
 
     user_refs_str = ""
     if django_user_ids:
+        # Convert all django_user_ids to strings
+        django_user_ids = [str(user_id) for user_id in django_user_ids]
         query = users_ref.where(filter=firestore.FieldFilter("django_id", "in", django_user_ids))
         user_docs = list(query.stream())
 
