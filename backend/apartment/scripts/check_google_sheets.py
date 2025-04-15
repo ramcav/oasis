@@ -95,7 +95,7 @@ def check_google_sheets(df):
             three_days_before = entry["departure_date"] - timedelta(days=3)
             send_notification(
                 title=f"Salida esperada en {apartment.name} (3 días)",
-                message=f"El apartamento {apartment.name} ({apartment.address}) tiene una salida esperada el {entry['departure_date']} a las {entry['departure_time']}.",
+                message=f"El apartamento {apartment.name} ({apartment.address}) tiene una salida esperada el {entry['departure_date']}.",
                 django_user_ids=[user.id for user in User.objects.all()],
                 scheduled_time=datetime.combine(three_days_before, datetime.min.time().replace(hour=10))  # 10 AM, 3 days before
             )
@@ -104,7 +104,7 @@ def check_google_sheets(df):
             one_day_before = entry["departure_date"] - timedelta(days=1)
             send_notification(
                 title=f"Salida esperada mañana en {apartment.name}",
-                message=f"El apartamento {apartment.name} ({apartment.address}) tiene una salida esperada mañana {entry['departure_date']} a las {entry['departure_time']}.",
+                message=f"El apartamento {apartment.name} ({apartment.address}) tiene una salida esperada mañana {entry['departure_date']}.",
                 django_user_ids=[user.id for user in User.objects.all()],
                 scheduled_time=datetime.combine(one_day_before, datetime.min.time().replace(hour=10))  # 10 AM, 1 day before
             )
@@ -112,7 +112,7 @@ def check_google_sheets(df):
             # 3. Schedule notification for departure day for all users
             send_notification(
                 title=f"Salida hoy en {apartment.name}",
-                message=f"El apartamento {apartment.name} ({apartment.address}) tiene una salida hoy a las {entry['departure_time']}.",
+                message=f"El apartamento {apartment.name} ({apartment.address}) tiene una salida hoy.",
                 django_user_ids=[user.id for user in User.objects.all()],
                 scheduled_time=datetime.combine(entry["departure_date"], datetime.min.time().replace(hour=8))  # 8 AM on departure day
             )
