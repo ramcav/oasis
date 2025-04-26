@@ -12,9 +12,12 @@ class UserSerializer(serializers.ModelSerializer):
 
 class ReviewSerializer(serializers.ModelSerializer):
     handyman = UserSerializer(read_only=True)
+    handyman_id = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.all(), write_only=True, source='handyman', allow_null=True
+    )
     class Meta:
         model = Review
-        fields = ['id', 'handyman','date', 'status', 'comment']
+        fields = ['id', 'handyman','handyman_id', 'date', 'status', 'comment']
         read_only_fields = ['id', 'date']
 
 class CleaningSerializer(serializers.ModelSerializer):
