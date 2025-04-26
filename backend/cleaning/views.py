@@ -12,6 +12,8 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from datetime import datetime
 
+from notifications.utils import send_notification
+from django.contrib.auth.models import User
 @api_view(['GET'])
 @permission_classes([AllowAny])
 @authentication_classes([JWTAuthentication])
@@ -104,10 +106,17 @@ def create_review(request):
 def update_review(request, pk):
     review = Review.objects.get(id=pk)
     serializer = ReviewSerializer(instance=review, data=request.data)
+    admins = User.objects.filter(profile__role="admin")
     print(request.data['handyman'])
     if serializer.is_valid():
         serializer.save()
         print(serializer.data['handyman'])
+        if serializer.data['status'] == 'C':
+            send_notification(
+                title=f"Revisión en {review.arrival.apartment.name}",
+                message=f"Revisión para {review.arrival.apartment.name} el {review.arrival.departure_date} ha sido actualizada.",
+                django_user_ids=[user.id for user in admins]
+            )
         return Response(serializer.data)
     return Response(serializer.errors, status=400)
 
