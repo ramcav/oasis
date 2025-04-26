@@ -24,6 +24,7 @@ class Cleaning(models.Model):
     
     def save(self, *args, **kwargs):
         if self.cleaner is not None and self.status == 'P':
+
             self.status = 'A'
 
             admins = User.objects.filter(profile__role='admin')

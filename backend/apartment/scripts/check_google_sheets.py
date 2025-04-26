@@ -6,6 +6,16 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 from datetime import datetime, timedelta
 from notifications.utils import send_notification
+import re
+import unicodedata
+
+
+def sanitize_string(s):
+    # Normalize and remove accents
+    nfkd_form = unicodedata.normalize('NFKD', s)
+    only_ascii = "".join([c for c in nfkd_form if not unicodedata.combining(c)])
+    # Remove non-alphanumeric characters (optionally allow spaces)
+    return re.sub(r'[^A-Za-z0-9 ]+', '', only_ascii)
 
 
 def check_google_sheets(df):
@@ -24,15 +34,15 @@ def check_google_sheets(df):
 
         # Detect header row (indicates a new apartment)
         if any("fecha de entrada" in str(cell).lower() for cell in row_values):
-            current_apartment = str(row_values[2]).strip()
-            current_address = str(row_values[1]).strip()
+            current_apartment = sanitize_string(str(row_values[2]).strip())
+            current_address = sanitize_string(str(row_values[1]).strip())
             continue
 
         print(row_values)
 
         # Only process rows that belong to an apartment and have enough data
         if current_apartment and current_address and len(row_values) >= 3:
-            guest = str(row_values[0]).strip()
+            guest = sanitize_string(str(row_values[0]).strip())
             arrival_raw = str(row_values[3]).strip()
             departure_raw = str(row_values[4]).strip()
             
@@ -67,7 +77,7 @@ def check_google_sheets(df):
             name=entry["apartment"],
             address=entry["address"],
             defaults={
-                "description": f"Apartment {entry['apartment']} at {entry['address']}",
+                "description": f"Apartmento {entry['apartment']} en {entry['address']}",
                 "rooms": 1,
                 "bathrooms": 1,
                 "extra_info": ""
@@ -91,6 +101,16 @@ def check_google_sheets(df):
         )
 
         if arrival_created:
+            print(f"🚶‍♂️ New arrival created for {apartment.name} from {entry['arrival_date']} to {entry['departure_date']}")
+            
+            send_notification(
+                title=f"Entrada confirmada en {apartment.name}",
+                message=f"El apartamento {apartment.name} ({apartment.address}) tiene una entrada confirmada el {entry['arrival_date']}.",
+                django_user_ids=[admin.id for admin in admins],
+                scheduled_time=datetime.combine(entry["arrival_date"], datetime.min.time().replace(hour=8))  # 8 AM on arrival day
+            )
+
+
             # 1. Schedule notification for 3 days before departure time for all users
             three_days_before = entry["departure_date"] - timedelta(days=3)
             send_notification(
@@ -99,6 +119,7 @@ def check_google_sheets(df):
                 django_user_ids=[user.id for user in User.objects.all()],
                 scheduled_time=datetime.combine(three_days_before, datetime.min.time().replace(hour=10))  # 10 AM, 3 days before
             )
+            print(f"📅 New notification scheduled for 3 days before departure: {apartment.name} on {three_days_before}")
 
             # 2. Schedule notification for 1 day before departure time for all users
             one_day_before = entry["departure_date"] - timedelta(days=1)
@@ -108,7 +129,7 @@ def check_google_sheets(df):
                 django_user_ids=[user.id for user in User.objects.all()],
                 scheduled_time=datetime.combine(one_day_before, datetime.min.time().replace(hour=10))  # 10 AM, 1 day before
             )
-            
+            print(f"📅 New notification scheduled for 1 day before departure: {apartment.name} on {one_day_before}")
             # 3. Schedule notification for departure day for all users
             send_notification(
                 title=f"Salida hoy en {apartment.name}",
@@ -116,8 +137,8 @@ def check_google_sheets(df):
                 django_user_ids=[user.id for user in User.objects.all()],
                 scheduled_time=datetime.combine(entry["departure_date"], datetime.min.time().replace(hour=8))  # 8 AM on departure day
             )
-            
-            print(f"📅 New arrival created for {apartment.name} from {entry['arrival_date']} to {entry['departure_date']}")
+            print(f"📅 New notification scheduled for departure day: {apartment.name} on {entry['departure_date']}")
+
 
         # Create cleaning if it doesn't exist
         cleaning, cleaning_created = Cleaning.objects.get_or_create(

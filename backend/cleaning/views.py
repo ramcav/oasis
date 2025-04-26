@@ -104,6 +104,8 @@ def create_review(request):
 def update_review(request, pk):
     review = Review.objects.get(id=pk)
     serializer = ReviewSerializer(instance=review, data=request.data)
+    print(request.data['handyman'])
+    print(serializer.data['handyman'])
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data)
