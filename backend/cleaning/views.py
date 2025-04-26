@@ -20,6 +20,10 @@ from django.contrib.auth.models import User
 def list_cleanings(request):
     user_id = request.query_params.get('cleaner_id', None)
     start_date = request.query_params.get('start_date', None)
+
+    # parse date into YYYY-MM-DD format
+    if start_date:
+        start_date = datetime.strptime(start_date, '%Y-%m-%d').strftime('%Y-%m-%d')
     
     cleanings = Cleaning.objects.all()
     
