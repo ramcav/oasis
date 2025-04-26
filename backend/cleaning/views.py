@@ -105,9 +105,9 @@ def update_review(request, pk):
     review = Review.objects.get(id=pk)
     serializer = ReviewSerializer(instance=review, data=request.data)
     print(request.data['handyman'])
-    print(serializer.data['handyman'])
     if serializer.is_valid():
         serializer.save()
+        print(serializer.data['handyman'])
         return Response(serializer.data)
     return Response(serializer.errors, status=400)
 
