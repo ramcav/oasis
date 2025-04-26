@@ -23,7 +23,11 @@ def list_cleanings(request):
 
     # parse date into YYYY-MM-DD format
     if start_date:
-        start_date = datetime.strptime(start_date, '%d-%m-%Y').strftime('%Y-%m-%d')
+        # check if date is in DD-MM-YYYY format
+        try:
+            start_date = datetime.strptime(start_date, '%d-%m-%Y').strftime('%Y-%m-%d')
+        except ValueError:
+            start_date = None
     
     cleanings = Cleaning.objects.all()
     
