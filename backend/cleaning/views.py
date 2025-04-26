@@ -107,10 +107,8 @@ def update_review(request, pk):
     review = Review.objects.get(id=pk)
     serializer = ReviewSerializer(instance=review, data=request.data)
     admins = User.objects.filter(profile__role="admin")
-    print(request.data['handyman'])
     if serializer.is_valid():
         serializer.save()
-        print(serializer.data['handyman'])
         if serializer.data['status'] == 'C':
             send_notification(
                 title=f"Revisión en {review.cleaning.apartment.name}",
