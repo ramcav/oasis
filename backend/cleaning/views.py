@@ -113,8 +113,8 @@ def update_review(request, pk):
         print(serializer.data['handyman'])
         if serializer.data['status'] == 'C':
             send_notification(
-                title=f"Revisión en {review.arrival.apartment.name}",
-                message=f"Revisión para {review.arrival.apartment.name} el {review.arrival.departure_date} ha sido actualizada.",
+                title=f"Revisión en {review.cleaning.apartment.name}",
+                message=f"Revisión para {review.cleaning.apartment.name} el {review.cleaning.arrival.departure_date} ha sido actualizada.",
                 django_user_ids=[user.id for user in admins]
             )
         return Response(serializer.data)
